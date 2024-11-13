@@ -1,6 +1,7 @@
 import os
 import torch
 import argparse
+import numpy as np
 from dassl.engine import build_trainer
 from dassl.config import get_cfg_default
 from dassl.utils import setup_logger, set_random_seed, collect_env_info
@@ -62,10 +63,12 @@ def setup_cfg(args):
 
     # 1. From the dataset config file
     if args.dataset_config_file:
+        cfg.set_new_allowed(True)
         cfg.merge_from_file(args.dataset_config_file)
 
     # 2. From the method config file
     if args.config_file:
+        cfg.set_new_allowed(True)
         cfg.merge_from_file(args.config_file)
 
     # 3. From input arguments
@@ -93,10 +96,23 @@ def main(args):
     print('** System info **\n{}\n'.format(collect_env_info()))
 
     trainer = build_trainer(cfg)
+    print("\nTrainer: ", trainer)
 
     # zero-shot classification
     if args.zero_shot:
         trainer.test_zs()
+
+    
+
+    # TODO: load in the point clouds and prompt variants, and get the logit similarity between the embeddings
+    pcl = np.load('/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human/Exp1_X/state7_pcl.npy')
+    text = "a clay X"
+    # conver point cloud to tensor on cuda and add in batch dimension
+    pc = torch.tensor(pcl).cuda().unsqueeze(0)
+    print("Point cloud shape: ", pc.shape)
+    score = trainer.get_pointclip_score(pc, text)
+    print("Score: ", score)
+    assert False
         
     # view weight and prompt search
     vweights = best_param.best_prompt_weight['{}_{}_test_weights'.format(cfg.DATASET.NAME.lower(), cfg.MODEL.BACKBONE.NAME2)]

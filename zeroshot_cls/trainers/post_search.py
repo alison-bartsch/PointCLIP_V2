@@ -62,6 +62,10 @@ def read_prompts(cfg, dataset='modelnet40'):
     txt_feat = sio.loadmat('prompts/{}_{}_text_feat_lib.mat'.format(dataset, cfg.MODEL.BACKBONE.NAME2))
     return data, txt_feat
 
+@torch.no_grad()
+def get_pointclip_cosine_sim():
+    pass
+
 
 @torch.no_grad()
 def search_prompt_zs(cfg, vweights, image_feature=None, searched_prompt=None, prompt_lib=None):

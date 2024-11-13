@@ -19,6 +19,10 @@ class Textual_Encoder(nn.Module):
         prompts = torch.cat([clip.tokenize(p) for p in prompts]).cuda()
         text_feat = self.clip_model.encode_text(prompts).repeat(1, self.cfg.MODEL.PROJECT.NUM_VIEWS)
         return text_feat
+    
+    def encode_text(self, text):
+        text_feat = self.clip_model.encode_text(text)
+        return text_feat
 
 
 def load_clip_to_cpu(cfg):
@@ -50,9 +54,9 @@ class PointCLIPV2_ZS(TrainerX):
 
         # Encoders from CLIP
         self.visual_encoder = clip_model.visual
-        textual_encoder = Textual_Encoder(cfg, classnames, clip_model)
+        self.textual_encoder = Textual_Encoder(cfg, classnames, clip_model)
         
-        text_feat = textual_encoder()
+        text_feat = self.textual_encoder()
         self.text_feat = text_feat / text_feat.norm(dim=-1, keepdim=True)
         
         self.logit_scale = clip_model.logit_scale
@@ -74,6 +78,20 @@ class PointCLIPV2_ZS(TrainerX):
         img = self.get_img(pc).cuda()
         img = torch.nn.functional.interpolate(img, size=(imsize, imsize), mode='bilinear', align_corners=True)        
         return img
+    
+    def get_pointclip_score(self, pc, text):
+        with torch.no_grad():
+            text = clip.tokenize(text).cuda()
+            text_feat = self.textual_encoder.encode_text(text)
+            
+            image_feat = self.real_proj(pc)
+            image_feat = image_feat.type(self.dtype)
+            
+            image_feat = self.visual_encoder(image_feat)
+            image_feat = image_feat / image_feat.norm(dim=-1, keepdim=True)
+            
+            cosine_sim = torch.nn.functional.cosine_similarity(text_feat, image_feat, dim=-1)
+        return cosine_sim
     
     def model_inference(self, pc, label=None):
         

@@ -1,0 +1,85 @@
+Collecting env info ...
+** System info **
+PyTorch version: 1.13.1
+Is debug build: False
+CUDA used to build PyTorch: 11.7
+ROCM used to build PyTorch: N/A
+
+OS: Ubuntu 20.04.4 LTS (x86_64)
+GCC version: (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+Clang version: Could not collect
+CMake version: Could not collect
+Libc version: glibc-2.31
+
+Python version: 3.10.10 (main, Mar 21 2023, 18:45:11) [GCC 11.2.0] (64-bit runtime)
+Python platform: Linux-5.13.0-30-generic-x86_64-with-glibc2.31
+Is CUDA available: True
+CUDA runtime version: Could not collect
+CUDA_MODULE_LOADING set to: LAZY
+GPU models and configuration: GPU 0: NVIDIA GeForce RTX 2080 Ti
+Nvidia driver version: 515.105.01
+cuDNN version: Could not collect
+HIP runtime version: N/A
+MIOpen runtime version: N/A
+Is XNNPACK available: True
+
+Versions of relevant libraries:
+[pip3] numpy==1.23.5
+[pip3] pytorch3d==0.7.3
+[pip3] torch==1.13.1
+[pip3] torch-cluster==1.6.1
+[pip3] torch-geometric==2.3.1
+[pip3] torch-scatter==2.1.2
+[pip3] torchaudio==0.13.1
+[pip3] torchvision==0.14.1
+[conda] blas                      1.0                         mkl  
+[conda] ffmpeg                    4.3                  hf484d3e_0    pytorch
+[conda] mkl                       2021.4.0           h06a4308_640  
+[conda] mkl-service               2.4.0           py310h7f8727e_0  
+[conda] mkl_fft                   1.3.1           py310hd6ae3a3_0  
+[conda] mkl_random                1.2.2           py310h00e6091_0  
+[conda] numpy                     1.23.5          py310hd5efca6_0  
+[conda] numpy-base                1.23.5          py310h8e6c178_0  
+[conda] pytorch                   1.13.1          py3.10_cuda11.7_cudnn8.5.0_0    pytorch
+[conda] pytorch-cuda              11.7                 h778d358_3    pytorch
+[conda] pytorch-mutex             1.0                        cuda    pytorch
+[conda] pytorch3d                 0.7.3           py310_cu117_pyt1131    pytorch3d
+[conda] torch-cluster             1.6.1                    pypi_0    pypi
+[conda] torch-geometric           2.3.1                    pypi_0    pypi
+[conda] torch-scatter             2.1.2                    pypi_0    pypi
+[conda] torchaudio                0.13.1              py310_cu117    pytorch
+[conda] torchvision               0.14.1              py310_cu117    pytorch
+        Pillow (9.4.0)
+
+Loading trainer: PointCLIPV2_ZS
+Loading dataset: ModelNet40
+
+
+Data shape:  (2048, 2048, 3)
+
+
+Data shape:  (2048, 2048, 3)
+
+
+Data shape:  (2048, 2048, 3)
+
+
+Data shape:  (2048, 2048, 3)
+
+
+Data shape:  (1648, 2048, 3)
+
+
+Data shape:  (2048, 2048, 3)
+
+
+Data shape:  (420, 2048, 3)
+***** Dataset statistics *****
+  Dataset: ModelNet40
+  # classes: 40
+  # train_x: 9,840
+  # val: 2,468
+  # test: 2,468
+Loading CLIP (backbone: ViT-B/16)
+Loading evaluator: Classification
+Do evaluation on test set
