@@ -21,7 +21,7 @@ class Textual_Encoder(nn.Module):
         return text_feat
     
     def encode_text(self, text):
-        text_feat = self.clip_model.encode_text(text)
+        text_feat = self.clip_model.encode_text(text).repeat(1, self.cfg.MODEL.PROJECT.NUM_VIEWS)
         return text_feat
 
 
@@ -89,9 +89,15 @@ class PointCLIPV2_ZS(TrainerX):
             
             image_feat = self.visual_encoder(image_feat)
             image_feat = image_feat / image_feat.norm(dim=-1, keepdim=True)
+
+            image_feat_w = image_feat.reshape(-1, self.num_views, self.channel) * self.view_weights.reshape(1, -1, 1)
+            image_feat_w = image_feat_w.reshape(-1, self.num_views * self.channel).type(self.dtype)
+                        
+            image_feat = image_feat.reshape(-1, self.num_views * self.channel)
             
             cosine_sim = torch.nn.functional.cosine_similarity(text_feat, image_feat, dim=-1)
-        return cosine_sim
+            cosine_sim_w = torch.nn.functional.cosine_similarity(text_feat, image_feat_w, dim=-1)
+        return cosine_sim, cosine_sim_w
     
     def model_inference(self, pc, label=None):
         

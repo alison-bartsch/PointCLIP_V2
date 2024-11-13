@@ -1,7 +1,9 @@
 import os
 import torch
+import pickle
 import argparse
 import numpy as np
+from tqdm import tqdm
 from dassl.engine import build_trainer
 from dassl.config import get_cfg_default
 from dassl.utils import setup_logger, set_random_seed, collect_env_info
@@ -104,14 +106,77 @@ def main(args):
 
     
 
-    # TODO: load in the point clouds and prompt variants, and get the logit similarity between the embeddings
-    pcl = np.load('/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human/Exp1_X/state7_pcl.npy')
-    text = "a clay X"
-    # conver point cloud to tensor on cuda and add in batch dimension
-    pc = torch.tensor(pcl).cuda().unsqueeze(0)
-    print("Point cloud shape: ", pc.shape)
-    score = trainer.get_pointclip_score(pc, text)
-    print("Score: ", score)
+    # TODO: iterate through all states and experiment data and promps and save the scores to dictionaries to be loaded by plotting script
+    pointclip_full_dict = {}
+    pointclip_full_dict_w ={}
+
+    # create n_steps dictionary to store the number of steps for each shape
+    n_steps = {'flower': 7, 
+            'X': 8, 
+            'ring': 6, 
+            'heart': 10, 
+            'column': 5, 
+            'house': 11, 
+            'tree': 8, 
+            'cone': 8}
+    
+    base_path = '/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human/Exp1_'
+    shape_list = ['flower', 'X', 'ring', 'heart', 'column', 'house', 'tree', 'cone']
+    # iterate through shapes
+    for shape in tqdm(shape_list):
+        # create a dictionary for each shape
+        pointclip_shape_dict = {}
+        pointclip_shape_dict_w = {}
+
+        for i in range(6): # there are 6 prompt variations currently
+            pointclip_shape_dict[i] = np.zeros(n_steps[shape])
+            pointclip_shape_dict_w[i] = np.zeros(n_steps[shape])
+        
+        # iterate through trajectory states
+        for j in range(n_steps[shape]):
+            # load in the image and crop
+            full_path = base_path + shape + '/state' + str(j) + '_pcl.npy'
+            pcl = np.load(full_path)
+
+            if pcl.shape[0] < 2048:
+                # randomly duplicate points until there are 2048 points
+                pcl = np.repeat(pcl, 2048//pcl.shape[0] + 1, axis=0)
+                print("Shape: ", pcl.shape)
+            else:
+                pcl = pcl[np.random.choice(pcl.shape[0], 2048, replace=False)]
+            # conver point cloud to tensor on cuda and add in batch dimension
+            pc = torch.tensor(pcl).cuda().unsqueeze(0).float()
+
+            prompts = [f'{shape}', f'simple {shape}', f'a 2D {shape}', f'a clay {shape}', f'a {shape} shape in clay', f'a simple {shape} sculpture'] 
+        
+            # iterate through prompts
+            for k in range(len(prompts)):
+                text = prompts[k]
+                cosine_sim, cosine_sim_w = trainer.get_pointclip_score(pc, text)
+                pointclip_shape_dict[k][j] = cosine_sim
+                pointclip_shape_dict_w[k][j] = cosine_sim_w
+        
+        pointclip_full_dict[shape] = pointclip_shape_dict
+        pointclip_full_dict_w[shape] = pointclip_shape_dict_w
+
+    print("\nPointclip full dictionary: ", pointclip_full_dict)
+    print("\nPointclip full dictionary w: ", pointclip_full_dict_w)
+    dict_save_path = '/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human'
+    # save the dictionary with pickle
+    with open(dict_save_path + '/pointclip_full_dict.pkl', 'wb') as f:
+        pickle.dump(pointclip_full_dict, f)
+    with open(dict_save_path + '/pointclip_full_dict_w.pkl', 'wb') as f:
+        pickle.dump(pointclip_full_dict_w, f)
+
+    # pcl = np.load('/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human/Exp1_X/state7_pcl.npy')
+    # text = "a clay X"
+    # # downsample pcl to 2048 points for consistency with training data 
+    # pcl = pcl[np.random.choice(pcl.shape[0], 2048, replace=False)]
+    # # conver point cloud to tensor on cuda and add in batch dimension
+    # pc = torch.tensor(pcl).cuda().unsqueeze(0).float()
+    # print("Point cloud shape: ", pc.shape)
+    # cosine_sim, cosine_sim_w = trainer.get_pointclip_score(pc, text)
+    
     assert False
         
     # view weight and prompt search
