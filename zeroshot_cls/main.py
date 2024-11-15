@@ -138,12 +138,14 @@ def main(args):
             full_path = base_path + shape + '/state' + str(j) + '_pcl.npy'
             pcl = np.load(full_path)
 
-            if pcl.shape[0] < 2048:
-                # randomly duplicate points until there are 2048 points
-                pcl = np.repeat(pcl, 2048//pcl.shape[0] + 1, axis=0)
-                print("Shape: ", pcl.shape)
-            else:
-                pcl = pcl[np.random.choice(pcl.shape[0], 2048, replace=False)]
+            # if pcl.shape[0] < 2048:
+            #     # randomly duplicate points until there are 2048 points
+            #     while pcl.shape[0] < 2048:
+            #         pcl = np.vstack((pcl, pcl[np.random.choice(pcl.shape[0], 1, replace=False)]))
+            #     print("Shape: ", pcl.shape)
+            # else:
+            #     pcl = pcl[np.random.choice(pcl.shape[0], 2048, replace=False)]
+            
             # conver point cloud to tensor on cuda and add in batch dimension
             pc = torch.tensor(pcl).cuda().unsqueeze(0).float()
 
@@ -163,9 +165,9 @@ def main(args):
     print("\nPointclip full dictionary w: ", pointclip_full_dict_w)
     dict_save_path = '/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human'
     # save the dictionary with pickle
-    with open(dict_save_path + '/pointclip_full_dict.pkl', 'wb') as f:
+    with open(dict_save_path + '/no_downsample_pointclip_full_dict.pkl', 'wb') as f:
         pickle.dump(pointclip_full_dict, f)
-    with open(dict_save_path + '/pointclip_full_dict_w.pkl', 'wb') as f:
+    with open(dict_save_path + '/no_downsample_pointclip_full_dict_w.pkl', 'wb') as f:
         pickle.dump(pointclip_full_dict_w, f)
 
     # pcl = np.load('/home/alison/Documents/GitHub/point_flow_actor/experiments/discrete_dough_human/Exp1_X/state7_pcl.npy')
